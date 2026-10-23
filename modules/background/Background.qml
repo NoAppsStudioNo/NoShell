@@ -23,6 +23,9 @@ Variants {
         color: contentItem.Config.background.wallpaperEnabled ? "black" : "transparent"
         surfaceFormat.opaque: false
 
+        // Drawers punch a hole in their edge drag strip here so the widget stays clickable
+        readonly property Item animeCalendar: animeLoader
+
         anchors.top: true
         anchors.bottom: true
         anchors.left: true
@@ -160,6 +163,18 @@ Variants {
                 absX: clockLoader.x
                 absY: clockLoader.y
             }
+        }
+
+        Loader {
+            id: animeLoader
+
+            asynchronous: true
+            active: AnimeHeaven.enabled
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: Tokens.padding.extraLargeIncreased + Config.border.thickness
+
+            sourceComponent: AnimeCalendar {}
         }
     }
 }

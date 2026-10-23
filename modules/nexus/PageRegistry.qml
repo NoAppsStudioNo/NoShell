@@ -82,6 +82,12 @@ QtObject {
             description: Tr.tr("UI language, weather location, display units"),
             category: "shell"
         },
+        {
+            label: Tr.tr("Anime calendar"),
+            icon: "live_tv",
+            description: Tr.tr("AnimeHeaven desktop widget"),
+            category: "shell"
+        },
 
         // About
         {

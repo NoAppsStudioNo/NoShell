@@ -175,6 +175,14 @@ QtObject {
                 }
             }
         },
+        Component {
+            // Anime calendar
+            StackPage {
+                Component {
+                    AnimeCalendarPage {}
+                }
+            }
+        },
 
         // About
         Component {

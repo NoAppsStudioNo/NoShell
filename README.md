@@ -12,6 +12,32 @@
 
 https://github.com/user-attachments/assets/0840f496-575c-4ca6-83a8-87bb01a85c5f
 
+## NoShell: anime release calendar
+
+Adds a desktop widget (bottom-right) showing which of your tracked shows air today, from
+[animeheaven.me](https://animeheaven.me). Press **+** to pick shows, **✓** to go back. Once today's episode is uploaded
+you get a notification and a download button; clicking it downloads to `~/Videos/Anime/<show>/` and opens it in mpv.
+Clicking a show opens its page in your browser. Settings (on/off, background opacity) are in Nexus → Anime calendar.
+
+Scraping is cached on disk: the schedule is refetched every 6h and each show's page twice a day, except right after an
+episode airs, when it's checked every 15 min until the upload appears. The refresh button forces a full refetch.
+
+### Install
+
+You need [Caelestia](https://github.com/caelestia-dots/caelestia) installed first (Arch). Then run:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/NoAppsStudioNo/NoShell/anime-calendar/install.sh | sh
+```
+
+It installs `mpv`, `curl` and `libnotify` if missing, backs up any existing `~/.config/quickshell/caelestia`, clones this
+repo there and restarts the shell. Run it again to update. Only QML is changed, so it runs on top of the normal
+`caelestia-shell` package (2.5.0) with no rebuild. To uninstall: `rm -rf ~/.config/quickshell/caelestia && caelestia shell -d`.
+
+Tracked shows are stored in `~/.local/state/caelestia/anime.json`. Files: `services/AnimeHeaven.qml`,
+`modules/background/AnimeCalendar.qml`, `utils/scripts/animeheaven.js` (the scraper; if the site changes its HTML,
+fix it there and check with `node scripts/test-animeheaven.mjs`).
+
 ## Components
 
 -   Widgets: [`Quickshell`](https://quickshell.outfoxxed.me)

@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import qs.modules.bar as Bar
+import qs.services
 
 Region {
     id: root
@@ -20,6 +21,17 @@ Region {
     width: win.width - bar.clampedWidth - clampedThickness - win.dragMaskPadding * 2
     height: win.height - clampedThickness * 2 - win.dragMaskPadding * 2
     intersection: Intersection.Xor
+
+    // Desktop anime calendar: pass clicks through to the background window (before panels, so open panels still win)
+    Region {
+        readonly property Item cal: ShellState.componentsFor(root.win.screen)?.background?.animeCalendar ?? null
+
+        x: cal?.x ?? 0
+        y: cal?.y ?? 0
+        width: cal?.width ?? 0
+        height: cal?.height ?? 0
+        intersection: Intersection.Combine
+    }
 
     R {
         panel: root.panels.dashboard
