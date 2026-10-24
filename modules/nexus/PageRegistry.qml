@@ -85,7 +85,7 @@ QtObject {
         {
             label: Tr.tr("Anime calendar"),
             icon: "live_tv",
-            description: Tr.tr("AnimeHeaven desktop widget"),
+            description: Tr.tr("Anime desktop widgets and AniList sync"),
             category: "shell"
         },
 

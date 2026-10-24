@@ -52,6 +52,27 @@ function parseEpisodes(html) {
     return eps.filter(e => !isNaN(e.ep)).sort((a, b) => b.ep - a.ep);
 }
 
+// search.php page -> [{ id, title }]
+function parseSearch(html) {
+    const res = [];
+    const re = /similarname c'><a href='anime\.php\?(\w+)' class='c'>([^<]*)</g;
+    let m;
+    while ((m = re.exec(html)))
+        res.push({ id: m[1], title: decode(m[2]) });
+    return res;
+}
+
+// Id of the search result named like one of `titles` ("3rd Season" = "Season 3", case and punctuation ignored), or ""
+function findShow(results, titles) {
+    const norm = s => s.toLowerCase().replace(/(\d+)(st|nd|rd|th) season/g, "season $1").replace(/[^a-z0-9]+/g, "");
+    const want = titles.map(norm);
+    return results.find(r => want.includes(norm(r.title)))?.id ?? "";
+}
+
+function searchUrl(q) {
+    return `${base}/search.php?s=${encodeURIComponent(q)}`;
+}
+
 const minute = 60000;
 const hour = 60 * minute;
 const day = 24 * hour;

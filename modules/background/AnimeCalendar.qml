@@ -98,7 +98,7 @@ StyledRect {
                 Repeater {
                     model: root.picking ? [] : AnimeHeaven.entries
 
-                    ShowRow {
+                    AnimeShowRow {
                         id: entry
 
                         required property var modelData
@@ -108,10 +108,10 @@ StyledRect {
                         onClicked: AnimeHeaven.openPage(modelData.id)
 
                         IconButton {
-                            visible: entry.modelData.episode !== null
-                            icon: "download"
+                            visible: entry.modelData.episode !== null || entry.modelData.local || entry.modelData.aired
+                            icon: entry.modelData.local ? "play_arrow" : entry.modelData.episode !== null ? "download" : "smart_display"
                             type: entry.modelData.watched ? IconButton.Tonal : IconButton.Filled
-                            onClicked: AnimeHeaven.play(entry.modelData.id, entry.modelData.episode)
+                            onClicked: AnimeHeaven.playEntry(entry.modelData)
                         }
                     }
                 }
@@ -135,7 +135,7 @@ StyledRect {
                 Repeater {
                     model: root.picking ? AnimeHeaven.schedule : []
 
-                    ShowRow {
+                    AnimeShowRow {
                         id: pick
 
                         required property var modelData
@@ -152,73 +152,6 @@ StyledRect {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    component ShowRow: Item {
-        id: row
-
-        required property var show
-        property alias subtitle: sub.text
-        default property alias trailing: trailing.data
-
-        signal clicked
-
-        Layout.fillWidth: true
-        implicitHeight: rowLayout.implicitHeight + Tokens.padding.extraSmall * 2
-
-        StateLayer {
-            radius: Tokens.rounding.small
-            onClicked: row.clicked()
-        }
-
-        RowLayout {
-            id: rowLayout
-
-            anchors.fill: parent
-            anchors.margins: Tokens.padding.extraSmall
-            spacing: Tokens.spacing.medium
-
-            StyledClippingRect {
-                implicitWidth: 36
-                implicitHeight: root.coverHeight
-                radius: Tokens.rounding.extraSmall
-                color: Colours.palette.m3surfaceContainerHigh
-
-                Image {
-                    anchors.fill: parent
-                    source: row.show.image
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    sourceSize.width: 72
-                }
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 0
-
-                StyledText {
-                    Layout.fillWidth: true
-                    text: row.show.title
-                    elide: Text.ElideRight
-                    font: Tokens.font.body.medium
-                }
-
-                StyledText {
-                    id: sub
-
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    color: Colours.palette.m3onSurfaceVariant
-                }
-            }
-
-            RowLayout {
-                id: trailing
-
-                spacing: Tokens.spacing.extraSmall
             }
         }
     }

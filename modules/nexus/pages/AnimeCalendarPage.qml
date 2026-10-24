@@ -37,5 +37,21 @@ PageBase {
             value: AnimeHeaven.opacity
             onMoved: v => AnimeHeaven.setSetting("opacity", v)
         }
+
+        SectionHeader {
+            text: Tr.tr("AniList sync")
+        }
+
+        RowButton {
+            readonly property bool loggedIn: AnimeHeaven.anilistToken !== ""
+
+            first: true
+            last: true
+            icon: loggedIn ? "logout" : "login"
+            text: loggedIn ? Tr.tr("Log out of AniList") : AnimeHeaven.loggingIn ? Tr.tr("Waiting for AniList…") : Tr.tr("Log in to AniList")
+            subtext: AnimeHeaven.anilistUser ? Tr.tr("Logged in as %1. Finished episodes update your list.").arg(AnimeHeaven.anilistUser) : loggedIn ? Tr.tr("Checking login…") : Tr.tr("Opens AniList in your browser, press Approve there")
+            disabled: AnimeHeaven.loggingIn
+            onClicked: loggedIn ? AnimeHeaven.setAnilistToken("") : AnimeHeaven.login()
+        }
     }
 }

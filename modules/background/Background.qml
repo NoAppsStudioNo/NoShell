@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Caelestia.Config
@@ -20,6 +21,7 @@ Variants {
         name: "background"
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: contentItem.Config.background.wallpaperEnabled ? WlrLayer.Background : WlrLayer.Bottom
+        WlrLayershell.keyboardFocus: animeLoader.item?.searching ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None // anime search field
         color: contentItem.Config.background.wallpaperEnabled ? "black" : "transparent"
         surfaceFormat.opaque: false
 
@@ -174,7 +176,21 @@ Variants {
             anchors.bottom: parent.bottom
             anchors.margins: Tokens.padding.extraLargeIncreased + Config.border.thickness
 
-            sourceComponent: AnimeCalendar {}
+            sourceComponent: ColumnLayout {
+                readonly property bool searching: continueWatching.library
+
+                spacing: Tokens.spacing.medium
+
+                AnimeCalendar {
+                    Layout.fillWidth: true
+                }
+
+                ContinueWatching {
+                    id: continueWatching
+
+                    Layout.fillWidth: true
+                }
+            }
         }
     }
 }
