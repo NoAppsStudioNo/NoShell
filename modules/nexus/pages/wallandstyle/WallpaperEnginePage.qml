@@ -6,6 +6,7 @@ import Quickshell
 import Caelestia.Components
 import Caelestia.Config
 import Caelestia.I18n
+import Caelestia.State
 import qs.components
 import qs.components.controls
 import qs.services
@@ -148,6 +149,18 @@ PageBase {
                 disabled: !WallpaperEngine.enabled
                 onClicked: WallpaperEngine.stop()
             }
+        }
+
+        // Paused by the utilities "play wallpaper" toggle
+        RowButton {
+            Layout.fillWidth: true
+            visible: WallpaperEngine.ready && WallpaperEngine.enabled && !WallpaperEngine.playing
+            first: true
+            last: true
+            icon: "play_arrow"
+            text: Tr.tr("Wallpaper paused")
+            subtext: Tr.tr("Press to play it. The wallpaper button in Quick toggles does the same")
+            onClicked: PersistentState.wallpaperPlaying = true
         }
 
         // Steam account, for browsing and subscribing from here

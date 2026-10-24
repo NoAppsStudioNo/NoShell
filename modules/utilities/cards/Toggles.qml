@@ -132,7 +132,7 @@ StyledRect {
                 DelegateChoice {
                     roleValue: "wallpaperPlaying"
                     delegate: Toggle {
-                        icon: "smart_display"
+                        icon: "wallpaper"
                         checked: PersistentState.wallpaperPlaying
                         onClicked: PersistentState.wallpaperPlaying = !PersistentState.wallpaperPlaying
                     }
