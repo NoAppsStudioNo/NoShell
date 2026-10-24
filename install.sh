@@ -73,15 +73,10 @@ fi
 
 # Live wallpapers: waywallen + its Wallpaper Engine plugin, only if Wallpaper Engine is installed in Steam.
 # Pinned to the versions NoShell is tested with; utils/scripts/wallpaper-engine.py drives them.
-# ponytail: library paths with spaces in libraryfolders.vdf are missed
 WAYWALLEN="$HOME/.local/opt/waywallen/waywallen.AppImage"
 WE_PLUGIN="$HOME/.local/share/waywallen/plugins/org.waywallen.open-wallpaper-engine"
-we=""
-for lib in "$HOME/.steam/steam" "$HOME/.local/share/Steam" \
-    $(sed -n 's/.*"path"[[:space:]]*"\(.*\)"/\1/p' "$HOME/.steam/steam/steamapps/libraryfolders.vdf" 2>/dev/null); do
-    [ -d "$lib/steamapps/common/wallpaper_engine/assets" ] && we=1
-done
-if [ -z "$we" ]; then
+# Same check as the settings page (all Steam libraries, Flatpak Steam too)
+if ! python3 "$DIR/utils/scripts/wallpaper-engine.py" status 2>/dev/null | grep -q '"steam": true'; then
     echo "Wallpaper Engine not found in Steam, skipping live wallpapers (install it and rerun this script to get them)."
 elif [ "$(uname -m)" != x86_64 ]; then
     echo "Live wallpapers are only set up on x86_64, skipping."
