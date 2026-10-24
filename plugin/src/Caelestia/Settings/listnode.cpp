@@ -5,7 +5,7 @@
 
 #include "util/i18n.hpp"
 
-namespace caelestia::settings {
+namespace caelestia::shell::settings {
 
 using Qt::StringLiterals::operator""_s;
 
@@ -277,7 +277,7 @@ QJsonValue ListNode::toJson(bool sparse) const {
     Q_UNUSED(sparse) // Lists can't be sparse
 
     QJsonArray array;
-    for (auto* const element : m_elements)
+    for (const auto* element : m_elements)
         array << element->toJson(false);
     return array;
 }
@@ -443,4 +443,4 @@ void ListNode::onFallbackListNotify(const NodeChanges& added, const NodeChanges&
     emit elementsChanged(added, removed, moved);
 }
 
-} // namespace caelestia::settings
+} // namespace caelestia::shell::settings
