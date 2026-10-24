@@ -47,6 +47,7 @@ MouseArea {
     onClicked: expanded = false
 
     opacity: expanded ? 1 : 0
+    visible: opacity > 0 // The collapsed menu would still catch clicks on whatever sits below its button
     layer.enabled: opacity < 1
 
     Behavior on opacity {
