@@ -37,6 +37,12 @@ QtObject {
                 Component {
                     ColourSelect {}
                 }
+                Component {
+                    WallpaperEnginePage {}
+                }
+                Component {
+                    WorkshopPage {}
+                }
             }
         },
 

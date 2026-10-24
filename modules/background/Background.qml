@@ -20,9 +20,12 @@ Variants {
         screen: modelData
         name: "background"
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: contentItem.Config.background.wallpaperEnabled ? WlrLayer.Background : WlrLayer.Bottom
+        // A live Wallpaper Engine wallpaper renders on the background layer, so get out of its way
+        readonly property bool showWallpaper: contentItem.Config.background.wallpaperEnabled && !WallpaperEngine.enabled
+
+        WlrLayershell.layer: showWallpaper ? WlrLayer.Background : WlrLayer.Bottom
         WlrLayershell.keyboardFocus: animeLoader.item?.searching ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None // anime search field
-        color: contentItem.Config.background.wallpaperEnabled ? "black" : "transparent"
+        color: showWallpaper ? "black" : "transparent"
         surfaceFormat.opaque: false
 
         // Drawers punch a hole in their edge drag strip here so the widget stays clickable
@@ -50,7 +53,7 @@ Variants {
                 asynchronous: true
 
                 anchors.fill: parent
-                active: Config.background.wallpaperEnabled
+                active: win.showWallpaper
 
                 sourceComponent: Wallpaper {}
             }

@@ -54,6 +54,24 @@ Friends install/update with `install.sh` (clones into `~/.config/quickshell/cael
   is `#rrggbb`/`#aarrggbb` or a `Colours.palette` name so it follows the wallpaper.
 - Fonts in `assets/novolume/`. Both NType files register as family "NType 82": regular is weight 100, Headline 400.
 
+## Wallpaper Engine (live wallpapers)
+
+- Rendered by waywallen (AppImage in `~/.local/opt/waywallen/`, plugin `org.waywallen.open-wallpaper-engine` in
+  `~/.local/share/waywallen/plugins/`), both pinned and installed by `install.sh` only if Wallpaper Engine is in Steam.
+- `utils/scripts/wallpaper-engine.py` (run without args for usage): `list` scans Workshop `project.json`s; `apply`/`stop`
+  use DBus (`ApplyById`, `Quit`); account, QR login, Workshop search/subscribe and wallpaper properties use waywallen's
+  control WebSocket (port = DBus property `WsPort`, protobuf `proto/control.proto` in waywallen's repo, field numbers
+  pinned at v0.4.3) through a stdlib-only WebSocket + protobuf codec in the script. Without a live wallpaper the daemon
+  runs `--no-display` (an idle one with a display covers the shell's wallpaper); `apply` restarts it with one.
+  A fresh daemon has no Steam library, so starting it sends `LibraryAutoDetect`.
+- Properties (`props`) only exist while the wallpaper is rendering; the schema's `value` ignores overrides.
+- `services/WallpaperEngine.qml`: state in `~/.local/state/caelestia/wallpaper-engine.json`, reapplied on start.
+  Applying also sets the preview as the normal wallpaper so the colour scheme follows. Picking a normal wallpaper stops it.
+- `Background.qml` moves to the bottom layer and hides its wallpaper while one is on. The state must be read when the
+  singleton is created: a layer change right after the window is created is lost (later changes work).
+- UI: Nexus > Wallpaper & style > "Wallpaper Engine" button = sub-page 4 (`wallandstyle/WallpaperEnginePage.qml`: setup
+  steps, Steam QR login, installed wallpapers, customise the live one), "Get more" = sub-page 5 (`WorkshopPage.qml`).
+
 ## Applying changes
 
 File watching doesn't follow the symlink, so restart after edits and check the log:

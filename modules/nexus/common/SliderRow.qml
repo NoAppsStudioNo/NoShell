@@ -60,15 +60,8 @@ ConnectedRect {
                 }
             }
 
-            CustomMouseArea {
-                function onWheel(event: WheelEvent): void {
-                    const step = GlobalConfig.services.audioIncrement;
-                    if (event.angleDelta.y > 0)
-                        root.moved(Math.min(1, root.value + step));
-                    else if (event.angleDelta.y < 0)
-                        root.moved(Math.max(0, root.value - step));
-                }
-
+            // No wheel handling, so scrolling the page over a slider scrolls the page
+            Item {
                 Layout.fillWidth: true
                 implicitHeight: Tokens.padding.medium * 2
 

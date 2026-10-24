@@ -30,11 +30,13 @@ Searcher {
     }
 
     function setRandom(): void {
+        WallpaperEngine.stop();
         Quickshell.execDetached(["caelestia", "wallpaper", "-r", ...smartArg]);
     }
 
     function setWallpaper(path: string): void {
         actualCurrent = path;
+        WallpaperEngine.stop();
         Quickshell.execDetached(["caelestia", "wallpaper", "-f", path, ...smartArg]);
     }
 
