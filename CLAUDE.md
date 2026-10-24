@@ -41,6 +41,19 @@ Friends install/update with `install.sh` (clones into `~/.config/quickshell/cael
   prints the token (stored in `settings.anilistToken`). Client: "NoShell", id `Anime.anilistClientId` (54762), registered on the owner's AniList account.
 - Keep scraping light: schedule every 6h, show pages every 12h, 15 min only while an aired episode awaits upload.
 
+## NoVolume volume wheel
+
+- Replaces the right-edge OSD (volume/mic/brightness sliders): `modules/osd/Wrapper.qml` hosts
+  `modules/osd/NoVolumeDial.qml`, a Canvas port of the half wheel in the NoVolume Android app
+  (`~/Documents/projects/NoVolume`, `VolumeDialView.kt`). It draws in the app's units (phone px at 3x), so its
+  constants carry over; `u` converts to shell px. The OSD's blob background was removed from `ContentWindow.qml`.
+  Canvas is software-painted: never repaint per frame. Canvases repaint only when their settings key changes;
+  volume/animations move GPU items (marker ring `rotation`, `Shape` arcs, `Text` readout, press `Scale`).
+- Settings: `services/NoVolume.qml` (`~/.local/state/caelestia/novolume.json`, option names follow the app), page
+  `modules/nexus/pages/NoVolumePage.qml`. Colours are a theme (shell/dark/light) plus per-element overrides; a value
+  is `#rrggbb`/`#aarrggbb` or a `Colours.palette` name so it follows the wallpaper.
+- Fonts in `assets/novolume/`. Both NType files register as family "NType 82": regular is weight 100, Headline 400.
+
 ## Applying changes
 
 File watching doesn't follow the symlink, so restart after edits and check the log:

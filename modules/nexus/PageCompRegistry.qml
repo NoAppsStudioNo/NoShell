@@ -183,6 +183,14 @@ QtObject {
                 }
             }
         },
+        Component {
+            // NoVolume
+            StackPage {
+                Component {
+                    NoVolumePage {}
+                }
+            }
+        },
 
         // About
         Component {

@@ -88,6 +88,12 @@ QtObject {
             description: Tr.tr("Anime desktop widgets and AniList sync"),
             category: "shell"
         },
+        {
+            label: Tr.tr("NoVolume"),
+            icon: "volume_up",
+            description: Tr.tr("Half wheel volume slider on the right edge"),
+            category: "shell"
+        },
 
         // About
         {

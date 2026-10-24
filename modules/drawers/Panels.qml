@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import qs.components
+import qs.services
 import qs.modules.bar as Bar
 import qs.modules.dashboard as Dashboard
 import qs.modules.launcher as Launcher
@@ -42,6 +43,7 @@ Item {
         id: osdWrapper
 
         anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: NoVolume.s.offsetY
         anchors.right: parent.right
         anchors.rightMargin: sessionWrapper.anchors.rightMargin + session.width * (1 - session.offsetScale)
         clip: sidebar.visible || session.visible
@@ -55,6 +57,7 @@ Item {
             screen: root.screen
             screenState: root.screenState
             sidebarOrSessionVisible: sidebar.visible || session.visible
+            borderThickness: root.borderThickness
 
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right

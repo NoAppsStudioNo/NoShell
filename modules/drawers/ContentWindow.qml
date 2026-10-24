@@ -208,15 +208,6 @@ StyledWindow {
         }
 
         PanelBg {
-            id: osdBg
-
-            panel: panels.osdWrapper
-            deformAmount: 0.25
-            x: panels.osdWrapper.x + panels.osd.x + bar.implicitWidth
-            implicitWidth: panels.osd.width
-        }
-
-        PanelBg {
             id: notifsBg
 
             panel: panels.notifications
@@ -281,9 +272,6 @@ StyledWindow {
             }
             sidebar.transform: Matrix4x4 {
                 matrix: sidebarBg.deformMatrix
-            }
-            osd.transform: Matrix4x4 {
-                matrix: osdBg.deformMatrix
             }
             notifications.transform: Matrix4x4 {
                 matrix: notifsBg.deformMatrix

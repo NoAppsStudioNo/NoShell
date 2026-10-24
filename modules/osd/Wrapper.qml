@@ -6,108 +6,95 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
+// Volume OSD on the right edge: the NoVolume half wheel (replaces the volume/mic/brightness sliders)
 Item {
     id: root
 
     required property ShellScreen screen
     required property ScreenState screenState
     required property bool sidebarOrSessionVisible
+    required property real borderThickness
 
     property bool hovered
-    readonly property Brightness.Monitor monitor: Brightness.getMonitorForScreen(root.screen)
-    readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && !(screenState.utilities && Config.utilities.enabled)
-    property real offsetScale: shouldBeActive ? 0 : 1
+    readonly property var s: NoVolume.s
+    readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && s.enabled && !(screenState.utilities && Config.utilities.enabled)
+    property real offsetScale: 1
     property real sidebarOffset: sidebarOrSessionVisible ? 12 : 0
-
-    property real volume
-    property bool muted
-    property real sourceVolume
-    property bool sourceMuted
-    property real brightness
 
     function show(): void {
         screenState.osd = true;
         timer.restart();
     }
 
-    Component.onCompleted: {
-        volume = Audio.volume;
-        muted = Audio.muted;
-        sourceVolume = Audio.sourceVolume;
-        sourceMuted = Audio.sourceMuted;
-        brightness = root.monitor?.brightness ?? 0;
+    // Like the app: the arc retracts first, then the wheel leaves
+    onShouldBeActiveChanged: {
+        if (shouldBeActive) {
+            retract.stop();
+            offsetScale = 0;
+        } else {
+            retract.restart();
+        }
     }
 
     visible: offsetScale < 1
-    anchors.rightMargin: (-implicitWidth - 5 - sidebarOffset) * offsetScale
-    implicitWidth: content.implicitWidth
-    implicitHeight: content.implicitHeight
-    opacity: 1 - offsetScale
+    anchors.rightMargin: s.animation === 1 ? 0 : (-implicitWidth - 5 - sidebarOffset) * offsetScale
+    implicitWidth: dial.implicitWidth - borderThickness
+    implicitHeight: dial.implicitHeight
+    opacity: s.animation === 1 ? 1 : 1 - offsetScale
+    scale: s.animation === 1 ? 1 - offsetScale : 1
+    transformOrigin: Item.Right
 
     Behavior on offsetScale {
-        Anim {}
+        NumberAnimation {
+            duration: root.shouldBeActive ? (root.s.animation === 1 ? 300 : 250) / root.s.revealSpeed : 250 / root.s.hideSpeed
+            easing.type: root.s.animation === 1 ? (root.shouldBeActive ? Easing.OutBack : Easing.InBack) : (root.shouldBeActive ? Easing.OutQuad : Easing.InOutSine)
+            easing.overshoot: root.shouldBeActive ? 1.5 : 1
+        }
     }
 
     Connections {
         function onMutedChanged(): void {
             root.show();
-            root.muted = Audio.muted;
         }
 
         function onVolumeChanged(): void {
             root.show();
-            root.volume = Audio.volume;
-        }
-
-        function onSourceMutedChanged(): void {
-            root.show();
-            root.sourceMuted = Audio.sourceMuted;
-        }
-
-        function onSourceVolumeChanged(): void {
-            root.show();
-            root.sourceVolume = Audio.sourceVolume;
         }
 
         target: Audio
     }
 
-    Connections {
-        function onBrightnessChanged(): void {
-            root.show();
-            root.brightness = root.monitor?.brightness ?? 0;
-        }
-
-        target: root.monitor
-    }
-
     Timer {
         id: timer
 
-        interval: root.Config.osd.hideDelay
+        interval: root.s.hideDelay
         onTriggered: {
             if (!root.hovered)
                 root.screenState.osd = false;
         }
     }
 
-    Loader {
-        id: content
+    Timer {
+        id: retract
 
+        interval: root.s.arcAnimation === 3 ? 0 : 200 / root.s.arcHideSpeed
+        onTriggered: root.offsetScale = 1
+    }
+
+    NoVolumeDial {
+        id: dial
+
+        anchors.right: parent.right
+        anchors.rightMargin: -root.borderThickness
         anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
 
-        asynchronous: true
-        active: root.shouldBeActive || root.visible
-
-        sourceComponent: Content {
-            monitor: root.monitor
-            screenState: root.screenState
-            volume: root.volume
-            muted: root.muted
-            sourceVolume: root.sourceVolume
-            sourceMuted: root.sourceMuted
-            brightness: root.brightness
+        shown: root.shouldBeActive
+        volume: Audio.volume
+        muted: Audio.muted
+        onMoved: v => Audio.setVolume(v)
+        onMuteToggled: {
+            if (Audio.sink?.audio)
+                Audio.sink.audio.muted = !Audio.muted;
         }
     }
 }
