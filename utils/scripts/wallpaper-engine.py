@@ -3,7 +3,8 @@
 
   status                   {"engine", "steam"}: waywallen installed, Wallpaper Engine installed in Steam
   list                     installed scene/video/web Workshop wallpapers
-  apply ID | stop          show Workshop wallpaper ID (starting waywallen) | quit waywallen
+  apply ID [--paused] | stop   show Workshop wallpaper ID (starting waywallen) | quit waywallen
+  pause | resume           freeze or unfreeze the live wallpaper (the shell's play wallpaper toggle)
   account                  {"signedIn", "name"}: the Steam account waywallen uses for the Workshop
   login                    Steam QR login, one JSON line per step ({"state", "qr", "error"}) until it ends
   logout
@@ -282,11 +283,13 @@ def item_id(workshop_id):
 
 # --- commands
 
-def apply(workshop_id):
+def apply(workshop_id, paused):
     daemon(display=True)
     result = dbus("ApplyById", item_id(workshop_id))
     if result.returncode:
         sys.exit(f"could not apply {workshop_id}: {result.stderr.strip()}")
+    if paused:
+        dbus("Pause")
 
 
 def account(ctl):
@@ -358,11 +361,14 @@ def main():
         case ["list"]:
             print(json.dumps(projects(), ensure_ascii=False))
             return
-        case ["apply", workshop_id]:
-            apply(workshop_id)
+        case ["apply", workshop_id, *flags]:
+            apply(workshop_id, "--paused" in flags)
             return
         case ["stop"]:
             dbus("Quit")
+            return
+        case ["pause"] | ["resume"]:
+            dbus(args[0].capitalize())  # nothing to do when waywallen isn't running
             return
     if not args or args[0] not in ("account", "login", "logout", "search", "subscribe", "props", "set", "reset"):
         sys.exit(__doc__)

@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Caelestia.State
 import qs.utils
 
 // Live Wallpaper Engine wallpapers from the Steam Workshop, rendered by waywallen behind the shell
@@ -32,6 +33,8 @@ Singleton {
     property var pendingProps: ({}) // waiting for propTimer
 
     readonly property bool ready: !!status.engine && !!status.steam
+    readonly property bool playing: PersistentState.wallpaperPlaying // the utilities "play wallpaper" toggle
+    readonly property list<string> applyArgs: ["apply", current, ...(playing ? [] : ["--paused"])]
     readonly property bool searching: searchProc.running
     readonly property var currentProject: projects.find(p => p.id === current) ?? null
 
@@ -42,7 +45,7 @@ Singleton {
         schema = {};
         overrides = {};
         save();
-        run(["apply", id]);
+        run(applyArgs);
         const preview = projects.find(p => p.id === id)?.preview;
         if (preview)
             Quickshell.execDetached(["caelestia", "wallpaper", "-f", preview, ...Wallpapers.smartArg]);
@@ -142,6 +145,10 @@ Singleton {
     }
 
     onReadyChanged: refreshAccount()
+    onPlayingChanged: {
+        if (enabled)
+            run([playing ? "resume" : "pause"]);
+    }
 
     // ponytail: a download Steam never finishes (Steam closed) is polled until the shell restarts
     Timer {
@@ -280,7 +287,7 @@ Singleton {
             enabled = !!data.enabled && !!current;
         } catch (e) {}
         if (enabled)
-            run(["apply", current]);
+            run(applyArgs);
     }
 
     FileView {

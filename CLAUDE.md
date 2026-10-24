@@ -70,6 +70,8 @@ Friends install/update with `install.sh` (clones into `~/.config/quickshell/cael
   runs `--no-display` (an idle one with a display covers the shell's wallpaper); `apply` restarts it with one.
   A fresh daemon has no Steam library, so starting it sends `LibraryAutoDetect`.
 - Properties (`props`) only exist while the wallpaper is rendering; the schema's `value` ignores overrides.
+- The utilities "play wallpaper" quick toggle (`PersistentState.wallpaperPlaying`) also pauses/resumes it (DBus
+  `Pause`/`Resume`, and `apply --paused`).
 - `services/WallpaperEngine.qml`: state in `~/.local/state/caelestia/wallpaper-engine.json`, reapplied on start.
   Applying also sets the preview as the normal wallpaper so the colour scheme follows. Picking a normal wallpaper stops it.
 - `Background.qml` moves to the bottom layer and hides its wallpaper while one is on. The state must be read when the
