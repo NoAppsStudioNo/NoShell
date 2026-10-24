@@ -50,7 +50,8 @@ build() {
     cmake -S "$_repo" -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/ \
-        -DDISTRIBUTOR="NoShell"
+        -DDISTRIBUTOR="NoShell" \
+        -DVERSION="$(git -C "$_repo" describe --tags --abbrev=0 2>/dev/null || echo 2.5.0)" # NoShell's remote has no tags
     cmake --build build
 }
 
