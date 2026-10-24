@@ -108,6 +108,13 @@ EOF
     rm -rf "$tmp"
 fi
 
+# Terminal greeting: NoShell instead of Caelestia. Only replaces a missing or stock Caelestia greeting, never a customised one.
+greeting="${XDG_CONFIG_HOME:-$HOME/.config}/fish/functions/fish_greeting.fish"
+if [ ! -e "$greeting" ] || grep -q '/ ____/___ ____' "$greeting"; then
+    mkdir -p "$(dirname "$greeting")"
+    cp "$DIR/assets/fish_greeting.fish" "$greeting"
+fi
+
 echo "Restarting the shell"
 pkill -f "qs -c caelestia" || true
 sleep 1
