@@ -65,7 +65,9 @@ if [ "$want" != "$have" ]; then
             sudo pacman -Rdd --noconfirm "$old"
         fi
     done
-    sudo pacman -U --noconfirm "$tmp"/noshell-*.pkg.tar.zst
+    # Overwrite leftovers of a manual `cmake --install`, which pacman doesn't own
+    sudo pacman -U --noconfirm --overwrite '/usr/lib/qt6/qml/Caelestia/*' --overwrite '/usr/lib/caelestia/*' \
+        --overwrite '/etc/xdg/quickshell/caelestia/*' "$tmp"/noshell-*.pkg.tar.zst
     rm -rf "$tmp"
 fi
 
