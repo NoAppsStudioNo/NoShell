@@ -664,7 +664,10 @@ PageBase {
 
         StateLayer {
             radius: card.radius
-            onClicked: NoVolume.set("theme", card.key)
+            onClicked: {
+                NoVolume.set("theme", card.key);
+                NoVolume.set("colours", {}); // a premade design replaces the custom colours
+            }
         }
     }
 

@@ -16,6 +16,7 @@ Item {
     property bool shown: true
     property bool preview // always fully revealed
     property string theme // preview a preset theme instead of the configured look
+    property real edgeGap // px from the centre to the border's inner edge
 
     signal moved(volume: real)
     signal muteToggled
@@ -30,13 +31,15 @@ Item {
     readonly property real faceR: dialH * 0.35 + arcGap <= maxArcR ? dialH * 0.35 : maxArcR - arcGap
     readonly property real arcR: faceR + arcGap
     readonly property real cx: width // shell px
-    // Shell theme: the border's own blob is the face (exact bar colour, no double transparency), see ContentWindow's osdBg
-    readonly property bool blobFace: !preview && s.showBackground && s.theme === "shell" && s.colours.background === undefined
+    // The border bulges out round the face (ContentWindow's osdBg). Shell theme: that blob is the face (exact bar colour,
+    // no double transparency); any other background fades in over it from the border, so the wheel still grows out of it
+    readonly property bool bulge: !preview && s.showBackground
+    readonly property bool blobFace: bulge && s.theme === "shell" && s.colours.background === undefined
     readonly property real faceHalf: faceR * u
     // Edge fade width (shell px). Over the blob face it masks the markers instead of painting the (translucent) border
     // colour on top, which would make the face darker than the border
     readonly property real fadeW: faceR * u / (21 - s.internalShadowWidth / 100 * 19.67)
-    readonly property bool fadeMask: blobFace && s.internalShadow
+    readonly property bool fadeMask: bulge && s.internalShadow
     readonly property real cy: height / 2
 
     readonly property int target: muted ? 0 : Math.max(0, Math.min(100, Math.round(volume * 100)))
@@ -54,9 +57,9 @@ Item {
     readonly property real progressSweep: Math.min(arcTarget, arcSweep)
 
     // What each canvas draws from: they repaint only when their own inputs change
-    readonly property string faceKey: JSON.stringify([s.showShadow, s.shadowRadius, `${pal.background}`, `${pal.shadow}`, u, faceR, width, height])
+    readonly property string faceKey: JSON.stringify([bulge, edgeGap, Config.border.smoothing, s.showShadow, s.shadowRadius, `${pal.background}`, `${pal.shadow}`, u, faceR, width, height])
     readonly property string markersKey: JSON.stringify([s.markerStyle, s.minorMarkerStyle, s.markerThickness, s.minorMarkerThickness, s.markerSize, s.minorMarkerSize, s.showMarkers, s.showMinorMarkers, s.showWheelNumbers, s.wheelNumbersSize, s.wheelNumbersFont, s.wheelNumbersStroke, s.wheelNumbersStrokeWidth, `${pal.marker}`, `${pal.minorMarker}`, `${pal.numbers}`, `${pal.wheelNumbersStroke}`, u, faceR, NoVolume.fonts])
-    readonly property string edgeKey: JSON.stringify([blobFace, s.internalShadow, s.internalShadowWidth, s.outline, s.outlineThickness, `${pal.background}`, `${pal.outline}`, u, faceR, width, height])
+    readonly property string edgeKey: JSON.stringify([bulge, s.internalShadow, s.internalShadowWidth, s.outline, s.outlineThickness, `${pal.background}`, `${pal.outline}`, u, faceR, width, height])
 
     function centerOffset(fm: FontMetrics, px: real): real {
         const r = fm.tightBoundingRect("8");
@@ -69,7 +72,6 @@ Item {
 
     implicitWidth: Math.ceil(arcR * 1.1 * u)
     implicitHeight: Math.ceil(dialH * u)
-    clip: true
 
     onFaceKeyChanged: face.requestPaint()
     onMarkersKeyChanged: markers.requestPaint()
@@ -151,42 +153,77 @@ Item {
         font.pixelSize: 100
     }
 
-    // Everything but the volume number shrinks round the centre while pressed
+    // Dial face and its shadow. Over the border's bulge it reaches on to the border's inner edge (edgeGap past the
+    // centre) and stays put while pressed, like the bulge
+    Canvas {
+        id: face
+
+        width: parent.width + (root.bulge ? root.edgeGap : 0)
+        height: parent.height
+        visible: root.s.showBackground && !root.blobFace
+
+        transform: Scale {
+            origin.x: root.cx
+            origin.y: root.cy
+            xScale: root.bulge ? 1 : root.touch
+            yScale: root.bulge ? 1 : root.touch
+        }
+
+        onPaint: {
+            const ctx = getContext("2d");
+            ctx.reset();
+            ctx.clearRect(0, 0, width, height);
+            const s = root.s, p = root.pal, u = root.u;
+            const r = root.faceR * u;
+            if (root.bulge) {
+                // Border colour (the blob below) at the border's inner edge, fading to the face colour. Eased (smoothstep):
+                // a linear fade shows a line where it ends
+                const g = ctx.createLinearGradient(width, 0, width - (width - root.cx + r * 0.7) * 0.35, 0);
+                for (let i = 0; i <= 10; i++) {
+                    const t = i / 10;
+                    g.addColorStop(t, Qt.rgba(p.background.r, p.background.g, p.background.b, p.background.a * t * t * (3 - 2 * t)));
+                }
+                ctx.fillStyle = g;
+                // The bulge's outline: the face, plus the fillets (radius = the border's smoothing, blob.frag's circular
+                // smin) joining it to the border's inner edge, where they meet the face's flat top/bottom or the circle.
+                // Drawn 1px bigger than the blob so its antialiased edge doesn't show as a rim of border colour
+                const k = Config.border.smoothing, fx = width - k, dx = fx - root.cx;
+                const fdy = dx >= 0 ? r + k : Math.sqrt((r + k) ** 2 - dx * dx);
+                const top = dx >= 0 ? -Math.PI / 2 : Math.atan2(-fdy, dx);
+                ctx.beginPath();
+                ctx.moveTo(width, root.cy - fdy);
+                ctx.arc(fx, root.cy - fdy, k - 1, 0, dx >= 0 ? Math.PI / 2 : Math.atan2(fdy, -dx));
+                ctx.arc(root.cx, root.cy, r + 1, top, -top, true);
+                ctx.arc(fx, root.cy + fdy, k - 1, dx >= 0 ? -Math.PI / 2 : Math.atan2(-fdy, -dx), 0);
+                ctx.closePath();
+                ctx.fill();
+                return;
+            }
+            const shadow = s.showShadow && s.shadowRadius > 0 && p.shadow.a > 0;
+            if (p.background.a === 0 && !shadow)
+                return;
+            if (shadow) {
+                ctx.shadowColor = p.shadow;
+                // Android's blur radius is sigma / 0.57735 - 0.5, canvas wants 2 sigma (in device px)
+                ctx.shadowBlur = (1.1547 * s.shadowRadius / 100 * 50 + 1) * u;
+            }
+            ctx.fillStyle = p.background.a > 0 ? p.background : Qt.rgba(0, 0, 0, 1 / 255);
+            ctx.beginPath();
+            ctx.arc(root.cx, root.cy, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Everything but the volume number shrinks round the centre while pressed; cut along the centre line
     Item {
         anchors.fill: parent
+        clip: true
 
         transform: Scale {
             origin.x: root.cx
             origin.y: root.cy
             xScale: root.touch
             yScale: root.touch
-        }
-
-        // Dial face and its shadow
-        Canvas {
-            id: face
-
-            anchors.fill: parent
-            visible: root.s.showBackground && !root.blobFace
-
-            onPaint: {
-                const ctx = getContext("2d");
-                ctx.reset();
-                ctx.clearRect(0, 0, width, height);
-                const s = root.s, p = root.pal, u = root.u;
-                const shadow = s.showShadow && s.shadowRadius > 0 && p.shadow.a > 0;
-                if (p.background.a === 0 && !shadow)
-                    return;
-                if (shadow) {
-                    ctx.shadowColor = p.shadow;
-                    // Android's blur radius is sigma / 0.57735 - 0.5, canvas wants 2 sigma (in device px)
-                    ctx.shadowBlur = (1.1547 * s.shadowRadius / 100 * 50 + 1) * u;
-                }
-                ctx.fillStyle = p.background.a > 0 ? p.background : Qt.rgba(0, 0, 0, 1 / 255);
-                ctx.beginPath();
-                ctx.arc(root.cx, root.cy, root.faceR * u, 0, Math.PI * 2);
-                ctx.fill();
-            }
         }
 
         // Arcs: from the bottom, clockwise round the face
@@ -351,7 +388,7 @@ Item {
             id: edge
 
             anchors.fill: parent
-            visible: (root.s.internalShadow && !root.blobFace) || root.s.outline
+            visible: (root.s.internalShadow && !root.bulge) || root.s.outline
 
             onPaint: {
                 const ctx = getContext("2d");
@@ -359,7 +396,7 @@ Item {
                 ctx.clearRect(0, 0, width, height);
                 const s = root.s, p = root.pal, u = root.u;
                 const r = root.faceR * u;
-                if (s.internalShadow && !root.blobFace) {
+                if (s.internalShadow && !root.bulge) {
                     ctx.save();
                     ctx.beginPath();
                     ctx.arc(root.cx, root.cy, r, 0, Math.PI * 2);

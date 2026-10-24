@@ -58,7 +58,8 @@ Friends install/update with `install.sh` (clones into `~/.config/quickshell/cael
   volume/animations move GPU items (marker ring `rotation`, `Shape` arcs, `Text` readout, press `Scale`).
 - Shell theme + no background override: the wheel's face is a `BlobRect` (`osdBg` in `ContentWindow.qml`, shaped from
   `Wrapper.faceLeft/faceHalf`) so it is the border's exact colour and bulges out of it; the dial's own face canvas is hidden then
-  (`blobFace`). The wheel sits `edgeInset` px in from the screen edge. A `BlobRect` ignores `visible`: collapse it to size 0.
+  (`blobFace`). Any other background still bulges the border (`bulge`) and the face canvas fades in over it from the
+  screen edge. The wheel sits `edgeInset` px in from the screen edge. A `BlobRect` ignores `visible`: collapse it to size 0.
 - Settings: `services/NoVolume.qml` (`~/.local/state/caelestia/novolume.json`, option names follow the app), page
   `modules/nexus/pages/NoVolumePage.qml`. Colours are a theme (shell/dark/light) plus per-element overrides; a value
   is `#rrggbb`/`#aarrggbb` or a `Colours.palette` name so it follows the wallpaper.

@@ -27,7 +27,7 @@ Item {
     readonly property real offsetScale: classic ? sliderScale : wheelScale
     readonly property bool slides: classic || s.animation !== 1
     // For ContentWindow's osdBg: the face's left edge and radius, so the border can bulge out around the wheel
-    readonly property bool bulge: !classic && dial.blobFace
+    readonly property bool bulge: !classic && dial.bulge
     readonly property real faceLeft: dial.x + dial.cx - dial.faceHalf
     readonly property real faceHalf: dial.faceHalf
     property real sidebarOffset: sidebarOrSessionVisible ? 12 : 0
@@ -148,6 +148,7 @@ Item {
         anchors.rightMargin: root.s.edgeInset - root.borderThickness
         anchors.verticalCenter: parent.verticalCenter
 
+        edgeGap: anchors.rightMargin
         shown: root.shouldBeActive && !root.classic
         volume: Audio.volume
         muted: Audio.muted
