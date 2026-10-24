@@ -1,28 +1,40 @@
 #!/bin/sh
-# Installs (or updates) NoShell on top of an existing Caelestia install. Arch Linux only.
+# Installs (or updates) NoShell, a Caelestia shell fork. Arch Linux only. Sets up Caelestia itself first if it's missing.
 #   curl -fsSL https://raw.githubusercontent.com/NoAppsStudioNo/NoShell/anime-calendar/install.sh | sh
-# Uninstall: rm -rf ~/.config/quickshell/caelestia && caelestia shell -d   (falls back to the stock shell)
+# Uninstall: rm -rf ~/.config/quickshell/caelestia && paru -S caelestia-shell && caelestia shell -d
 set -e
 
 REPO=https://github.com/NoAppsStudioNo/NoShell
 BRANCH=anime-calendar
-SUPPORTED=2.5.0
 DIR="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/caelestia"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/noshell" # builds and downloads; /tmp is often a small RAM disk
 
-if ! pacman -Q caelestia-shell >/dev/null 2>&1; then
-    echo "caelestia-shell is not installed. Install Caelestia first: https://github.com/caelestia-dots/caelestia" >&2
+if ! command -v pacman >/dev/null; then
+    echo "NoShell only supports Arch Linux." >&2
     exit 1
 fi
-version=$(pacman -Q caelestia-shell | awk '{print $2}' | cut -d- -f1)
-[ "$version" = "$SUPPORTED" ] || echo "Warning: built for caelestia-shell $SUPPORTED but you have $version, things may break."
+if [ "$(id -u)" = 0 ]; then
+    echo "Run this as your normal user, not root (it asks for sudo when needed)." >&2
+    exit 1
+fi
 
-missing=""
-for pkg in git curl mpv libnotify; do
-    pacman -Q "$pkg" >/dev/null 2>&1 || missing="$missing $pkg"
-done
-if [ -n "$missing" ]; then
-    echo "Installing:$missing"
-    sudo pacman -S --needed --noconfirm $missing
+sudo pacman -S --needed --noconfirm git curl mpv libnotify base-devel cmake ninja qt6-shadertools
+
+# Caelestia itself (Hyprland config, CLI, theming), the official way
+if ! command -v caelestia >/dev/null; then
+    helper=$(command -v paru || command -v yay || true)
+    helper=${helper##*/}
+    if [ -z "$helper" ]; then
+        echo "Installing paru (an AUR helper, needed by Caelestia)"
+        tmp=$(mktemp -d)
+        git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru"
+        (cd "$tmp/paru" && makepkg -si --noconfirm)
+        rm -rf "$tmp"
+        helper=paru
+    fi
+    echo "Installing Caelestia"
+    "$helper" -S --needed --noconfirm caelestia-cli
+    caelestia install --aur-helper "$helper" --noconfirm
 fi
 
 if git -C "$DIR" remote get-url origin 2>/dev/null | grep -q NoShell; then
@@ -36,6 +48,25 @@ else
     fi
     mkdir -p "$(dirname "$DIR")"
     git clone -b "$BRANCH" "$REPO" "$DIR"
+fi
+
+# The shell's compiled plugin, built from this repo so it always matches the QML (replaces the caelestia-shell
+# package). Versioned by the last change to the C++ side, so QML-only updates skip the few minutes of building.
+want=$(git -C "$DIR" log -1 --format=%cd.%h --date=format:%Y%m%d -- plugin extras CMakeLists.txt)
+have=$(pacman -Q noshell 2>/dev/null | awk '{print $2}' | cut -d- -f1)
+if [ "$want" != "$have" ]; then
+    echo "Building the shell (takes a few minutes, needs ~3 GB free in ~/.cache)"
+    mkdir -p "$CACHE"
+    tmp=$(mktemp -d -p "$CACHE")
+    cp "$DIR/packaging/PKGBUILD" "$tmp/"
+    (cd "$tmp" && NOSHELL_SRC="$DIR" makepkg -sf --noconfirm)
+    for old in caelestia-shell caelestia-shell-git; do
+        if pacman -Q "$old" >/dev/null 2>&1; then
+            sudo pacman -Rdd --noconfirm "$old"
+        fi
+    done
+    sudo pacman -U --noconfirm "$tmp"/noshell-*.pkg.tar.zst
+    rm -rf "$tmp"
 fi
 
 # Live wallpapers: waywallen + its Wallpaper Engine plugin, only if Wallpaper Engine is installed in Steam.
@@ -54,7 +85,8 @@ elif [ "$(uname -m)" != x86_64 ]; then
     echo "Live wallpapers are only set up on x86_64, skipping."
 else
     sudo pacman -S --needed --noconfirm fuse2 glib2 python unzip
-    tmp=$(mktemp -d)
+    mkdir -p "$CACHE"
+    tmp=$(mktemp -d -p "$CACHE")
     if ! sha256sum -c --status <<EOF 2>/dev/null
 78c6948e4a1412dde98ff7a033e8682a4461e67ac1ea8368d9412c9a5f12974e  $WAYWALLEN
 EOF
@@ -81,3 +113,4 @@ pkill -f "qs -c caelestia" || true
 sleep 1
 caelestia shell -d
 echo "Done. Press + on the widget in the bottom-right corner of your desktop to pick shows."
+echo "Live wallpapers: Settings > Wallpaper & style > Wallpaper Engine."

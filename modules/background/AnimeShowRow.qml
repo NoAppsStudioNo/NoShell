@@ -32,7 +32,7 @@ Item {
         anchors.margins: Tokens.padding.extraSmall
         spacing: Tokens.spacing.medium
 
-        StyledClippingRect {
+        ClipRect {
             implicitWidth: 36
             implicitHeight: row.coverHeight
             radius: Tokens.rounding.extraSmall

@@ -1,0 +1,60 @@
+# NoShell: caelestia-shell built from this repo, so the compiled plugin always matches the fork's QML.
+# install.sh builds it with makepkg; pkgver only changes when the C++ side does, so QML-only updates skip the rebuild.
+# Based on the AUR caelestia-shell-git PKGBUILD.
+
+pkgname=noshell
+pkgver=0
+pkgrel=1
+pkgdesc='Caelestia shell fork with an anime calendar, NoVolume wheel and Wallpaper Engine'
+arch=('x86_64' 'aarch64')
+url='https://github.com/NoAppsStudioNo/NoShell'
+license=('GPL-3.0-only')
+depends=(
+    'caelestia-cli'
+    'quickshell-git'
+    'glibc'
+    'gcc-libs'
+    'ddcutil'
+    'brightnessctl'
+    'libcava'
+    'networkmanager'
+    'lm_sensors'
+    'aubio'
+    'libpipewire'
+    'libqalculate'
+    'power-profiles-daemon'
+    'ttf-material-symbols-variable'
+    'ttf-rubik-vf'
+    'ttf-cascadia-code-nerd'
+    'qt6-base'
+    'qt6-declarative'
+    'qt6-imageformats'
+    'qt6-multimedia'
+    'qt6-m3shapes-git'
+    'swappy'
+    'fish'
+    'bash'
+)
+makedepends=('git' 'cmake' 'ninja' 'qt6-shadertools')
+provides=('caelestia-shell')
+conflicts=('caelestia-shell' 'caelestia-shell-git')
+
+_repo="${NOSHELL_SRC:-$startdir/..}" # install.sh builds from a copy of this file
+
+pkgver() {
+    # Last change to anything compiled; install.sh computes the same
+    git -C "$_repo" log -1 --format=%cd.%h --date=format:%Y%m%d -- plugin extras CMakeLists.txt
+}
+
+build() {
+    cmake -S "$_repo" -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/ \
+        -DDISTRIBUTOR="NoShell"
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+    install -Dm644 "$_repo/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

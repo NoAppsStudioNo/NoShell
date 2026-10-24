@@ -1,13 +1,18 @@
 # NoShell (caelestia-shell fork, branch anime-calendar)
 
-Fork of [caelestia-dots/shell](https://github.com/caelestia-dots/shell) at tag v2.5.0, branch `anime-calendar`.
+Fork of [caelestia-dots/shell](https://github.com/caelestia-dots/shell) (merged up to upstream main 2e1c51fa,
+2026-10-24), branch `anime-calendar`.
 Published at https://github.com/NoAppsStudioNo/NoShell (remotes: `origin` = NoShell, `upstream` = caelestia-dots/shell).
 Friends install/update with `install.sh` (clones into `~/.config/quickshell/caelestia`). It runs live as the user's shell: `~/.config/quickshell/caelestia` is a symlink to this repo.
 
 ## Rules
 
-- QML/JS only. Never change `plugin/` (C++); it is not rebuilt, the shell uses the compiled plugin from the
-  `caelestia-shell` 2.5.0 AUR package. So no new `Config.*` options; fork settings live in `AnimeHeaven.settings`.
+- Prefer QML/JS. `plugin/` (C++) is compiled into the `noshell` pacman package (`packaging/PKGBUILD`, replaces
+  `caelestia-shell`), which install.sh rebuilds whenever the last commit touching `plugin`, `extras` or `CMakeLists.txt`
+  changes, so a C++ change costs everyone a ~1 min rebuild. Fork settings live in the fork's services, not `Config.*`.
+- Syncing upstream: `git fetch upstream && git merge upstream/main`, then grep the fork's files for QML types upstream
+  removed/renamed, build (`cmake -B <dir> -G Ninja && cmake --build <dir> && DESTDIR=<dir>/root cmake --install <dir>`)
+  and run `QML_IMPORT_PATH=<dir>/root/usr/lib/qt6/qml qs -p <checkout>` to test against the new plugin before installing.
 - Match upstream style (Tokens/Colours/StyledText/IconButton, `Tr.tr` for strings).
 
 ## Anime calendar feature

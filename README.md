@@ -24,15 +24,20 @@ episode airs, when it's checked every 15 min until the upload appears. The refre
 
 ### Install
 
-You need [Caelestia](https://github.com/caelestia-dots/caelestia) installed first (Arch). Then run:
+Arch Linux only. Run:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/NoAppsStudioNo/NoShell/anime-calendar/install.sh | sh
 ```
 
-It installs `mpv`, `curl` and `libnotify` if missing, backs up any existing `~/.config/quickshell/caelestia`, clones this
-repo there and restarts the shell. Run it again to update. Only QML is changed, so it runs on top of the normal
-`caelestia-shell` package (2.5.0) with no rebuild. To uninstall: `rm -rf ~/.config/quickshell/caelestia && caelestia shell -d`.
+If Caelestia isn't installed yet, it installs it first the official way (`caelestia-cli` from the AUR, then
+`caelestia install`, installing the `paru` AUR helper if you have none). Then it backs up any existing
+`~/.config/quickshell/caelestia`, clones this repo there, builds the shell's compiled plugin from this repo as the
+`noshell` package (replacing `caelestia-shell`, so plugin and QML always match; ~1 minute, only when the C++ side changed)
+and restarts the shell. If Wallpaper Engine is installed in Steam it also sets up live wallpapers (see Nexus →
+Wallpaper & style → Wallpaper Engine). Run it again to update.
+
+To uninstall: `rm -rf ~/.config/quickshell/caelestia && paru -S caelestia-shell && caelestia shell -d`.
 
 Tracked shows are stored in `~/.local/state/caelestia/anime.json`. Files: `services/AnimeHeaven.qml`,
 `modules/background/AnimeCalendar.qml`, `utils/scripts/animeheaven.js` (the scraper; if the site changes its HTML,
