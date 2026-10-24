@@ -1,30 +1,34 @@
-<h1 align=center>caelestia-shell</h1>
+<h1 align=center>NoShell</h1>
 
 <div align=center>
 
-![GitHub last commit](https://img.shields.io/github/last-commit/caelestia-dots/shell?style=for-the-badge&labelColor=101418&color=9ccbfb)
-![GitHub Repo stars](https://img.shields.io/github/stars/caelestia-dots/shell?style=for-the-badge&labelColor=101418&color=b9c8da)
-![GitHub repo size](https://img.shields.io/github/repo-size/caelestia-dots/shell?style=for-the-badge&labelColor=101418&color=d3bfe6)
-[![Ko-Fi donate](https://img.shields.io/badge/donate-kofi?style=for-the-badge&logo=ko-fi&logoColor=ffffff&label=ko-fi&labelColor=101418&color=f16061&link=https%3A%2F%2Fko-fi.com%2Fsoramane)](https://ko-fi.com/soramane)
-[![Discord invite](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscordapp.com%2Fapi%2Finvites%2FBGDCFCmMBk%3Fwith_counts%3Dtrue&query=approximate_member_count&style=for-the-badge&logo=discord&logoColor=ffffff&label=discord&labelColor=101418&color=96f1f1&link=https%3A%2F%2Fdiscord.gg%2FBGDCFCmMBk)][discord]
+A fork of [Caelestia's desktop shell](https://github.com/caelestia-dots/shell) for Hyprland, kept in sync with upstream.
 
 </div>
 
 https://github.com/user-attachments/assets/0840f496-575c-4ca6-83a8-87bb01a85c5f
 
-## NoShell: anime release calendar
+## What NoShell adds
 
-Adds a desktop widget (bottom-right) showing which of your tracked shows air today, from
-[animeheaven.me](https://animeheaven.me). Press **+** to pick anime, **✓** to go back. Once today's episode is uploaded
-you get a notification and a download button; clicking it downloads to `~/Videos/Anime/<show>/` and opens it in mpv.
-Clicking a show opens its page in your browser. Settings (on/off, background opacity) are in Nexus → Anime calendar.
+- **Anime calendar** (desktop widget, bottom-right): which of your tracked anime air today, from
+  [animeheaven.me](https://animeheaven.me). Press **+** to pick anime, **✓** to go back. Once today's episode is
+  uploaded you get a notification and a download button (saves to `~/Videos/Anime/<show>/` and opens it in mpv).
+  Scraping is cached: the schedule is refetched every 6h and each show's page twice a day, except right after an
+  episode airs, when it's checked every 15 min until the upload appears.
+- **Continue watching** (widget above the calendar): your watching list, synced with [AniList](https://anilist.co) if
+  you sign in. Plays the next episode in mpv, resumes where you stopped and moves on once you've watched 80%.
+- **NoVolume wheel**: the volume/brightness OSD on the right edge is replaced by the half wheel from the NoVolume
+  Android app, with its own settings page.
+- **Wallpaper Engine live wallpapers** (if you own [Wallpaper Engine](https://store.steampowered.com/app/431960) on
+  Steam): pick Workshop wallpapers, customise their settings, sign in with Steam to search and subscribe to new ones,
+  all from Settings → Wallpaper & style → Wallpaper Engine. Rendered by [waywallen](https://github.com/waywallen/waywallen).
+  The play wallpaper quick toggle pauses them.
 
-Scraping is cached on disk: the schedule is refetched every 6h and each show's page twice a day, except right after an
-episode airs, when it's checked every 15 min until the upload appears. The refresh button forces a full refetch.
+Settings for everything are in the Nexus settings app (Anime calendar, NoVolume, Wallpaper & style).
 
-### Install
+## Install
 
-Arch Linux only. Run:
+**Arch Linux (and Arch-based distros like CachyOS or EndeavourOS)** is the only supported and tested setup. Run:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/NoAppsStudioNo/NoShell/anime-calendar/install.sh | sh
@@ -34,14 +38,33 @@ If Caelestia isn't installed yet, it installs it first the official way (`caeles
 `caelestia install`, installing the `paru` AUR helper if you have none). Then it backs up any existing
 `~/.config/quickshell/caelestia`, clones this repo there, builds the shell's compiled plugin from this repo as the
 `noshell` package (replacing `caelestia-shell`, so plugin and QML always match; ~1 minute, only when the C++ side changed)
-and restarts the shell. If Wallpaper Engine is installed in Steam it also sets up live wallpapers (see Nexus →
-Wallpaper & style → Wallpaper Engine). Run it again to update.
+and restarts the shell. If Wallpaper Engine is installed in Steam it also sets up live wallpapers. Run it again to update.
 
 To uninstall: `rm -rf ~/.config/quickshell/caelestia && paru -S caelestia-shell && caelestia shell -d`.
 
-Tracked shows are stored in `~/.local/state/caelestia/anime.json`. Files: `services/AnimeHeaven.qml`,
-`modules/background/AnimeCalendar.qml`, `utils/scripts/animeheaven.js` (the scraper; if the site changes its HTML,
-fix it there and check with `node scripts/test-animeheaven.mjs`).
+### Other distros and Nix
+
+Not supported or tested. The core shell should build the same way as upstream's
+[manual installation](#manual-installation) (clone **this** repo instead of `caelestia-dots/shell`), but NoShell's
+additions also need `mpv`, `curl`, `notify-send` (libnotify), `python3` and `gdbus` (glib2) on your `PATH`, and live
+wallpapers need the [waywallen](https://github.com/waywallen/waywallen) AppImage (needs FUSE 2) in
+`~/.local/opt/waywallen/waywallen.AppImage` plus its
+[Wallpaper Engine plugin](https://github.com/waywallen/open-wallpaper-engine) in
+`~/.local/share/waywallen/plugins/org.waywallen.open-wallpaper-engine` (see `install.sh` for the versions used).
+The Nix flake is upstream's: it doesn't include those tools, so on Nix the additions won't work as-is.
+
+### Where things live
+
+Anime state: `~/.local/state/caelestia/anime.json`. Live wallpaper choice: `~/.local/state/caelestia/wallpaper-engine.json`.
+NoVolume settings: `~/.local/state/caelestia/novolume.json`. Logins (AniList, Steam) stay on your machine and are never
+part of this repo.
+
+---
+
+> [!NOTE]
+> Everything below is **upstream Caelestia's README**, kept for reference on configuring the shell. Its install
+> commands (AUR, `nix run github:caelestia-dots/shell`, cloning `caelestia-dots/shell`) install stock Caelestia,
+> **not** NoShell. Use the install section above instead.
 
 ## Components
 
