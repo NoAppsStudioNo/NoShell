@@ -112,5 +112,5 @@ echo "Restarting the shell"
 pkill -f "qs -c caelestia" || true
 sleep 1
 caelestia shell -d
-echo "Done. Press + on the widget in the bottom-right corner of your desktop to pick shows."
+echo "Done. Press + on the widget in the bottom-right corner of your desktop to pick anime."
 echo "Live wallpapers: Settings > Wallpaper & style > Wallpaper Engine."

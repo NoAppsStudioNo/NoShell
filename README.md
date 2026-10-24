@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/0840f496-575c-4ca6-83a8-87bb01a85c5f
 ## NoShell: anime release calendar
 
 Adds a desktop widget (bottom-right) showing which of your tracked shows air today, from
-[animeheaven.me](https://animeheaven.me). Press **+** to pick shows, **✓** to go back. Once today's episode is uploaded
+[animeheaven.me](https://animeheaven.me). Press **+** to pick anime, **✓** to go back. Once today's episode is uploaded
 you get a notification and a download button; clicking it downloads to `~/Videos/Anime/<show>/` and opens it in mpv.
 Clicking a show opens its page in your browser. Settings (on/off, background opacity) are in Nexus → Anime calendar.
 
