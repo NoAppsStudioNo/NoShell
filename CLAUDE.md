@@ -48,12 +48,17 @@ Friends install/update with `install.sh` (clones into `~/.config/quickshell/cael
 
 ## NoVolume volume wheel
 
-- Replaces the right-edge OSD (volume/mic/brightness sliders): `modules/osd/Wrapper.qml` hosts
+- Replaces the right-edge OSD (volume/mic/brightness sliders) unless the `style` setting is 1 (Nexus > NoVolume > "Volume style"),
+  which brings back upstream's `modules/osd/Content.qml` sliders and panel blob (`osdBg` in `ContentWindow.qml`, only visible
+  then). `modules/osd/Wrapper.qml` hosts both; the wheel is
   `modules/osd/NoVolumeDial.qml`, a Canvas port of the half wheel in the NoVolume Android app
   (`~/Documents/projects/NoVolume`, `VolumeDialView.kt`). It draws in the app's units (phone px at 3x), so its
-  constants carry over; `u` converts to shell px. The OSD's blob background was removed from `ContentWindow.qml`.
+  constants carry over; `u` converts to shell px.
   Canvas is software-painted: never repaint per frame. Canvases repaint only when their settings key changes;
   volume/animations move GPU items (marker ring `rotation`, `Shape` arcs, `Text` readout, press `Scale`).
+- Shell theme + no background override: the wheel's face is a `BlobRect` (`osdBg` in `ContentWindow.qml`, shaped from
+  `Wrapper.faceLeft/faceHalf`) so it is the border's exact colour and bulges out of it; the dial's own face canvas is hidden then
+  (`blobFace`). The wheel sits `edgeInset` px in from the screen edge. A `BlobRect` ignores `visible`: collapse it to size 0.
 - Settings: `services/NoVolume.qml` (`~/.local/state/caelestia/novolume.json`, option names follow the app), page
   `modules/nexus/pages/NoVolumePage.qml`. Colours are a theme (shell/dark/light) plus per-element overrides; a value
   is `#rrggbb`/`#aarrggbb` or a `Colours.palette` name so it follows the wallpaper.

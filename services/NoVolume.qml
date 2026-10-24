@@ -12,12 +12,14 @@ Singleton {
     id: root
 
     readonly property var defaults: ({
+            style: 0, // 0 half wheel, 1 the normal Caelestia sliders (volume, mic, brightness)
             enabled: true,
             theme: "shell", // shell | dark | light; colours overrides any element on top of it
             colours: ({}),
             size: 54, // 0-100 -> 180-385 dp tall, the app's overlay size
             scale: 1, // shell px per dp
             offsetY: 0,
+            edgeInset: 34, // px from the screen edge to the wheel's centre (its cut edge); the face fills the gap to the border
             arcLength: 180,
             arcGap: 1,
             arcWidth: 24,
@@ -64,11 +66,11 @@ Singleton {
             doubleClickMute: true
         })
 
-    // Element colours: a "#rrggbb"/"#aarrggbb" string or a Colours.palette name (follows the wallpaper)
+    // Element colours: a "#rrggbb"/"#aarrggbb" string or a Colours.palette name (follows the wallpaper); "t:name" is a Colours.tPalette one
     readonly property var colourKeys: ["background", "shadow", "arc", "progress", "marker", "minorMarker", "indicator", "numbers", "volumeNumber", "outline", "volumeNumberStroke", "wheelNumbersStroke"]
     readonly property var themes: ({
             shell: {
-                background: "m3surfaceContainer",
+                background: "t:m3surface", // the border/bar colour, transparency included
                 shadow: "#32000000",
                 arc: "m3surfaceContainerHighest",
                 progress: "m3primary",
@@ -152,6 +154,8 @@ Singleton {
     }
 
     function resolve(value: string): color {
+        if (value.startsWith("t:"))
+            return Colours.tPalette[value.slice(2)] ?? "transparent";
         return value.startsWith("#") ? value : (Colours.palette[value] ?? "transparent");
     }
 

@@ -43,7 +43,7 @@ Item {
         id: osdWrapper
 
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: NoVolume.s.offsetY
+        anchors.verticalCenterOffset: osd.classic ? 0 : NoVolume.s.offsetY
         anchors.right: parent.right
         anchors.rightMargin: sessionWrapper.anchors.rightMargin + session.width * (1 - session.offsetScale)
         clip: sidebar.visible || session.visible

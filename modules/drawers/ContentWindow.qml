@@ -208,6 +208,32 @@ StyledWindow {
         }
 
         PanelBg {
+            id: osdBg
+
+            // The Caelestia sliders sit on a panel. The NoVolume wheel (shell theme) gets its face: a half circle round the
+            // wheel's centre joined to the border, so the half wheel grows out of it. A BlobRect ignores visible, so collapse it.
+            // The border sinks where a shape's left edge passes its inner edge (blob.frag) and keeps a smoothing bump where one
+            // touches it, so while the wheel slides into the border the face shrinks to nothing exactly at the inner edge.
+            readonly property real innerEdge: root.width - root.borderThickness
+            readonly property real osdScale: panels.osd.scale
+            readonly property real osdX: panels.osdWrapper.x + panels.osd.x + bar.implicitWidth
+            readonly property real faceX: osdX + panels.osd.width - (panels.osd.width - panels.osd.faceLeft) * osdScale
+            readonly property real faceR: Math.max(0, Math.min(panels.osd.faceHalf * osdScale, innerEdge - faceX))
+            readonly property real faceCY: panels.osdWrapper.y + root.borderThickness + panels.osd.y + panels.osd.height / 2
+            readonly property bool bulge: panels.osd.bulge && panels.osd.offsetScale < 1 && faceR > 0
+
+            panel: panels.osdWrapper
+            deformAmount: panels.osd.classic ? 0.25 : 0 // the face jumps in and out: a velocity stretch would wobble the border
+            x: bulge ? faceX : osdX
+            y: bulge ? faceCY - faceR : panel.y + root.borderThickness
+            implicitWidth: bulge ? Math.max(root.width - faceX, faceR * 2) : panels.osd.classic ? panels.osd.width : 0 // past the screen edge if need be: a BlobRect caps its radius at half its width
+            implicitHeight: bulge ? faceR * 2 : panels.osd.classic ? panel.height : 0
+            radius: bulge ? faceR : Tokens.rounding.extraLarge
+            topRightRadius: bulge ? 0 : -1
+            bottomRightRadius: bulge ? 0 : -1
+        }
+
+        PanelBg {
             id: notifsBg
 
             panel: panels.notifications
@@ -272,6 +298,9 @@ StyledWindow {
             }
             sidebar.transform: Matrix4x4 {
                 matrix: sidebarBg.deformMatrix
+            }
+            osd.transform: Matrix4x4 {
+                matrix: panels.osd.classic ? osdBg.deformMatrix : Qt.matrix4x4()
             }
             notifications.transform: Matrix4x4 {
                 matrix: notifsBg.deformMatrix

@@ -69,6 +69,17 @@ PageBase {
         }
     ]
 
+    readonly property list<MenuItem> styleItems: [
+        MenuItem {
+            text: Tr.tr("NoVolume wheel")
+            value: 0
+        },
+        MenuItem {
+            text: Tr.tr("Caelestia sliders")
+            value: 1
+        }
+    ]
+
     readonly property list<MenuItem> animItems: [
         MenuItem {
             text: Tr.tr("Slide")
@@ -146,8 +157,14 @@ PageBase {
             text: Tr.tr("General")
         }
 
-        Toggle {
+        Choice {
             first: true
+            key: "style"
+            label: Tr.tr("Volume style")
+            menuItems: root.styleItems
+        }
+
+        Toggle {
             key: "enabled"
             text: Tr.trCtx("Enabled", "toggle label")
             subtext: Tr.tr("Show the half wheel on the right edge when the volume changes or on hover")
@@ -302,6 +319,14 @@ PageBase {
             to: 2.5
             step: 0.05
             unit: "×"
+        }
+        Num {
+            key: "edgeInset"
+            icon: "keyboard_tab_rtl"
+            label: Tr.tr("Distance from screen edge")
+            from: 0
+            to: 150
+            unit: "px"
         }
         Num {
             last: true
